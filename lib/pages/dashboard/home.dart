@@ -3,6 +3,8 @@ import 'package:fitlife/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../dashboard/bmi_page.dart';
+import '../dashboard/artikel_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,102 +15,137 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
+  final List<int> _history = [];
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    if (index != _selectedIndex) {
+      _history.add(_selectedIndex);
+      setState(() => _selectedIndex = index);
+    }
   }
 
-  Widget _getBody() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildHomeContent();
-      case 1:
-        return const Center(child: Text("Halaman Kalkulator"));
-      case 2:
-        return const Center(child: Text("Halaman Menu"));
-      case 3:
-        return const Center(child: Text("Halaman Artikel"));
-      case 4:
-        return _buildProfileContent();
-      default:
-        return _buildHomeContent();
+  void _goBack() {
+    if (_history.isNotEmpty) {
+      setState(() {
+        _selectedIndex = _history.removeLast();
+      });
+    } else {
+      setState(() {
+        _selectedIndex = 0;
+      });
     }
   }
 
   // ================= HOME CONTENT =================
-
   Widget _buildHomeContent() {
+    final width = MediaQuery.of(context).size.width;
+    final isSmall = width < 370;
+
     return ListView(
       children: [
-        // HERO SECTION
+        /// HERO SECTION
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(
+            isSmall ? 20 : 24,
+            isSmall ? 24 : 30,
+            isSmall ? 20 : 24,
+            45,
+          ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF1AB673), Color(0xFF0E8F5A)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
+              colors: [Color(0xFFE6FFF3), Color(0xFFCFFFEA)],
             ),
             borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(40),
+              bottom: Radius.circular(45),
             ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.6),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00FF66).withOpacity(0.15),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Hi, Welcome Back !",
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "FitLife.id",
+                "Hi, Welcome Back!",
                 style: GoogleFonts.poppins(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  fontSize: isSmall ? 13 : 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF4B5563), // soft dark
                 ),
               ),
+              const SizedBox(height: 8),
+
+              RichText(
+                text: TextSpan(
+                  style: GoogleFonts.poppins(
+                    fontSize: isSmall ? 26 : 30,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  children: const [
+                    TextSpan(
+                      text: "FitLife.id",
+                      style: TextStyle(color: Color(0xFF111827)),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 10),
+
               Text(
                 "Track your health journey in a smarter way.",
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
+                  fontSize: isSmall ? 13 : 14,
+                  height: 1.4,
+                  color: const Color(0xFF6B7280),
                 ),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 30),
+        const SizedBox(height: 35),
 
+        /// FEATURE SECTION
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: isSmall ? 16 : 20),
           child: Column(
             children: [
-              // FITUR
               Text(
                 'Fitur Unggulan',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: isSmall ? 18 : 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Dapatkan semua yang anda butuhkan untuk mencapai tujuan kesehatan anda',
+                'Semua kebutuhan kesehatan dalam satu aplikasi.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: Colors.black54, fontSize: 13),
+                style: GoogleFonts.poppins(
+                  color: Colors.black54,
+                  fontSize: isSmall ? 12 : 13,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               _buildFeatureCard(
                 Icons.calculate,
                 'Kalkulator BMI',
                 'Hitung indeks massa tubuh anda.',
-                iconColor: Colors.orange,
+                Colors.orange,
+                isSmall,
               ),
               const SizedBox(height: 16),
 
@@ -116,15 +153,17 @@ class _HomeState extends State<Home> {
                 Icons.restaurant_menu,
                 'Menu Sehat',
                 'Temukan berbagai pilihan menu sehat.',
-                iconColor: Colors.pink,
+                Colors.pink,
+                isSmall,
               ),
               const SizedBox(height: 16),
 
               _buildFeatureCard(
                 Icons.article,
-                'Artikel',
+                'Artikel & Tips',
                 'Baca artikel dan tips diet sehat.',
-                iconColor: Colors.blue,
+                Colors.blue,
+                isSmall,
               ),
               const SizedBox(height: 16),
 
@@ -132,10 +171,11 @@ class _HomeState extends State<Home> {
                 Icons.person,
                 'Profil',
                 'Kelola informasi pribadi anda.',
-                iconColor: Colors.purple,
+                Colors.purple,
+                isSmall,
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -164,30 +204,30 @@ class _HomeState extends State<Home> {
 
         final user = snapshot.data;
 
-        return Padding(
+        return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 const CircleAvatar(
                   radius: 45,
-                  backgroundColor: Colors.green,
+                  backgroundColor: Color(0xFF00FF66),
                   child: Icon(Icons.person, size: 50, color: Colors.white),
                 ),
                 const SizedBox(height: 20),
+
                 Text(
                   user?.name ?? 'User',
                   style: GoogleFonts.poppins(
@@ -195,7 +235,9 @@ class _HomeState extends State<Home> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 Text(
                   user?.email ?? '-',
                   style: GoogleFonts.poppins(
@@ -203,29 +245,42 @@ class _HomeState extends State<Home> {
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 25),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    minimumSize: const Size(double.infinity, 45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+
+                const SizedBox(height: 30),
+
+                /// DIVIDER
+                Divider(color: Colors.grey.shade200),
+
+                const SizedBox(height: 20),
+
+                /// LOGOUT BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    label: Text(
+                      "Logout",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  onPressed: () async {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    await prefs.remove('user');
-                    if (context.mounted) {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    }
-                  },
-                  child: Text(
-                    "Logout",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                     ),
+                    onPressed: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.remove('user');
+
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
                   ),
                 ),
               ],
@@ -241,34 +296,35 @@ class _HomeState extends State<Home> {
   Widget _buildFeatureCard(
     IconData icon,
     String title,
-    String desc, {
-    Color iconColor = const Color(0xFF1AB673),
-  }) {
+    String desc,
+    Color iconColor,
+    bool isSmall,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isSmall ? 16 : 22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF00FF66).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: isSmall ? 48 : 55,
+            height: isSmall ? 48 : 55,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, color: iconColor),
+            child: Icon(icon, color: iconColor, size: isSmall ? 22 : 26),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,20 +333,21 @@ class _HomeState extends State<Home> {
                   title,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: isSmall ? 14 : 16,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   desc,
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: isSmall ? 12 : 13,
                     color: Colors.grey[600],
                   ),
                 ),
               ],
             ),
           ),
+          Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
         ],
       ),
     );
@@ -301,88 +358,90 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: true,
-        title: Text(
-          'FitLife.id',
-          style: GoogleFonts.poppins(
-            color: Colors.green,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: _getBody(),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomeContent(),
+            BmiPage(onBack: _goBack),
+            const Center(child: Text("Halaman Menu")),
+            ArtikelPage(onBack: _goBack),
+            _buildProfileContent(),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(5, (index) {
-            final isActive = _selectedIndex == index;
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
 
-            final icons = [
-              Icons.home,
-              Icons.calculate,
-              Icons.restaurant_menu,
-              Icons.article,
-              Icons.person,
-            ];
+  Widget _buildBottomNav() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(5, (index) {
+          final isActive = _selectedIndex == index;
 
-            final labels = ["Home", "BMI", "Menu", "Artikel", "Profil"];
+          final icons = [
+            Icons.home,
+            Icons.calculate,
+            Icons.restaurant_menu,
+            Icons.article,
+            Icons.person,
+          ];
 
-            return GestureDetector(
-              onTap: () => _onItemTapped(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isActive ? 16 : 8,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFF1AB673).withOpacity(0.15)
-                      : null,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      icons[index],
-                      size: isActive ? 26 : 22,
-                      color: isActive ? const Color(0xFF1AB673) : Colors.grey,
-                    ),
-                    if (isActive) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        labels[index],
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1AB673),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+          final labels = ["Home", "BMI", "Menu", "Artikel", "Profil"];
+
+          return GestureDetector(
+            onTap: () => _onItemTapped(index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: EdgeInsets.symmetric(
+                horizontal: isActive ? 16 : 8,
+                vertical: 8,
               ),
-            );
-          }),
-        ),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? const Color(0xFF00FF66).withOpacity(0.15)
+                    : null,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    icons[index],
+                    size: isActive ? 26 : 22,
+                    color: isActive ? const Color(0xFF00FF66) : Colors.grey,
+                  ),
+                  if (isActive) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      labels[index],
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF00FF66),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
