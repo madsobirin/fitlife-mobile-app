@@ -36,7 +36,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // ================= HOME CONTENT =================
+  //HOME CONTENT
   Widget _buildHomeContent() {
     final width = MediaQuery.of(context).size.width;
     final isSmall = width < 370;
