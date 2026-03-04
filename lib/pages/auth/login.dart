@@ -444,7 +444,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildSocialButton({required Widget icon, required String label}) {
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: () async {
+        final user = await auth.loginWithGoogle();
+
+        if (user != null && mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Login Google gagal")));
+        }
+      },
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
