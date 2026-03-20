@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../dashboard/bmi_page.dart';
 import '../dashboard/artikel_page.dart';
-import 'package:fitlife/pages/dashboard/profile.dart';
+import 'package:fitlife/pages/dashboard/profile_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -257,6 +257,7 @@ class _HomeState extends State<Home> {
             BmiPage(onBack: _goBack),
             const Center(child: Text("Halaman Menu")),
             ArtikelPage(onBack: _goBack),
+            // const ProfilePages(),
             const ProfilePage(),
           ],
         ),

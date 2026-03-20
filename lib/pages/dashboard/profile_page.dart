@@ -1,180 +1,246 @@
+import 'dart:convert';
+import 'package:fitlife/models/user_model.dart';
+import 'package:fitlife/services/auth_services.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfilePage extends StatefulWidget {
-  final VoidCallback onBack;
-  const ProfilePage({super.key, required this.onBack});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  bool isEdit = false;
-
-  String image =
-      "https://i.pravatar.cc/150";
-
-  final nameController = TextEditingController(text: "Aya User");
-  final emailController = TextEditingController(text: "aya@email.com");
-  final phoneController = TextEditingController(text: "08123456789");
-  final heightController = TextEditingController(text: "170");
-  final weightController = TextEditingController(text: "60");
-
-  DateTime? birthDate = DateTime(2000, 1, 1);
-
-  Future<void> pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: birthDate ?? DateTime.now(),
-      firstDate: DateTime(1980),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null) {
-      setState(() => birthDate = picked);
+  Future<UserModel?> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userString = prefs.getString('user');
+    if (userString != null) {
+      return UserModel.fromJson(jsonDecode(userString));
     }
+    return null;
   }
 
-  Widget buildField(String label, TextEditingController controller,
-      {bool isNumber = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: GoogleFonts.poppins(
-                fontSize: 12, color: Colors.grey)),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          enabled: isEdit,
-          keyboardType:
-              isNumber ? TextInputType.number : TextInputType.text,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey.withOpacity(0.08),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
+  void _handleLogout(BuildContext context) async {
+    // Tampilkan dialog konfirmasi
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.red.withOpacity(0.1),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.logout_rounded,
+                  color: Colors.redAccent,
+                  size: 30,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              'Keluar Akun?',
+              style: GoogleFonts.manrope(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Anda akan keluar dari akun ini.\nLogin ulang diperlukan untuk melanjutkan.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: const Color(0xFF6B7280),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Batal',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: Colors.redAccent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Keluar',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(height: 14),
-      ],
+      ),
     );
+
+    if (confirm != true) return;
+
+    // Panggil auth.logout() — hapus token + sign out Google
+    await auth.logout();
+
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(
+        context,
+        '/login',
+        arguments: {'message': 'Berhasil keluar dari akun'},
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: widget.onBack,
-                child: const Icon(Icons.arrow_back_ios_new),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                "Profile",
-                style: GoogleFonts.poppins(
-                    fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7FAF7),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        centerTitle: true,
+        title: Text(
+          'Profil',
+          style: GoogleFonts.poppins(
+            color: Colors.green,
+            fontWeight: FontWeight.bold,
           ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.green),
+      ),
+      body: FutureBuilder<UserModel?>(
+        future: getUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          const SizedBox(height: 20),
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(image),
-                ),
+          final user = snapshot.data;
 
-                if (isEdit)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1AB673),
-                        shape: BoxShape.circle,
+          return Center(
+            child: Container(
+              width: 350,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.green,
+                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    user?.name ?? 'User',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    user?.email ?? '-',
+                    style: GoogleFonts.poppins(color: Colors.black54),
+                  ),
+
+                  // Role badge
+                  if (user?.role != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.camera_alt,
-                            size: 18, color: Colors.white),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        user!.role.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.green,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 30),
+
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      minimumSize: const Size(double.infinity, 45),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => _handleLogout(context),
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    label: Text(
+                      "Logout",
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-          buildField("Nama Lengkap", nameController),
-          buildField("Email", emailController),
-          buildField("No Telepon", phoneController),
-          Text("Tanggal Lahir",
-              style: GoogleFonts.poppins(
-                  fontSize: 12, color: Colors.grey)),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: isEdit ? pickDate : null,
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                birthDate != null
-                    ? DateFormat("dd MMM yyyy").format(birthDate!)
-                    : "Pilih tanggal",
+                ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 14),
-
-          buildField("Tinggi Badan (cm)", heightController,
-              isNumber: true),
-          buildField("Berat Badan (kg)", weightController,
-              isNumber: true),
-
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1AB673),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () {
-                setState(() {
-                  isEdit = !isEdit;
-                });
-
-                if (!isEdit) {
-                  print("Data disimpan");
-                }
-              },
-              child: Text(
-                isEdit ? "Simpan" : "Edit Profile",
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-          )
-        ],
+          );
+        },
       ),
     );
   }
