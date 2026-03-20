@@ -1,10 +1,8 @@
-import 'dart:convert';
-import 'package:fitlife/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../dashboard/bmi_page.dart';
 import '../dashboard/artikel_page.dart';
+import 'package:fitlife/pages/dashboard/profile.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -183,114 +181,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // ================= PROFILE CONTENT =================
-
-  Future<UserModel?> _getUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userString = prefs.getString('user');
-    if (userString != null) {
-      return UserModel.fromJson(jsonDecode(userString));
-    }
-    return null;
-  }
-
-  Widget _buildProfileContent() {
-    return FutureBuilder<UserModel?>(
-      future: _getUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final user = snapshot.data;
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Color(0xFF00FF66),
-                  child: Icon(Icons.person, size: 50, color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-
-                Text(
-                  user?.name ?? 'User',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  user?.email ?? '-',
-                  style: GoogleFonts.poppins(
-                    color: Colors.black54,
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                /// DIVIDER
-                Divider(color: Colors.grey.shade200),
-
-                const SizedBox(height: 20),
-
-                /// LOGOUT BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.logout, color: Colors.white),
-                    label: Text(
-                      "Logout",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    onPressed: () async {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await prefs.remove('user');
-
-                      if (context.mounted) {
-                        Navigator.pushReplacementNamed(context, '/login');
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   // ================= FEATURE CARD =================
 
   Widget _buildFeatureCard(
@@ -367,7 +257,7 @@ class _HomeState extends State<Home> {
             BmiPage(onBack: _goBack),
             const Center(child: Text("Halaman Menu")),
             ArtikelPage(onBack: _goBack),
-            _buildProfileContent(),
+            const ProfilePage(),
           ],
         ),
       ),

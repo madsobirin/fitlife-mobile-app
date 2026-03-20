@@ -168,7 +168,12 @@ Future<void> logout() async {
     }
   } catch (_) {}
 
-  // Hapus local storage
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    await googleSignIn.disconnect();
+  } catch (_) {}
+
+  // Hapus semua local storage
   final prefs = await SharedPreferences.getInstance();
   await prefs.remove('user');
   await prefs.remove('token');
