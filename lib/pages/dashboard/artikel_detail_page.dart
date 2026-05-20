@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart'; // 👈 Tambahkan import ini
 import '../../models/artikel_model.dart';
 
 class ArtikelDetailPage extends StatelessWidget {
@@ -8,18 +9,27 @@ class ArtikelDetailPage extends StatelessWidget {
   const ArtikelDetailPage({super.key, required this.artikel});
 
   static const _green = Color(0xFF1AB673);
+  static const _textDark = Color(
+    0xFF1F2937,
+  ); // Sesuaikan dengan warna teks admin (#1f2937)
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
     const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
-  }
-
-  String _stripHtml(String html) {
-    return html.replaceAll(RegExp(r'<[^>]*>'), '');
   }
 
   @override
@@ -43,8 +53,11 @@ class ArtikelDetailPage extends StatelessWidget {
                     color: Colors.black.withOpacity(0.35),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new,
-                      size: 18, color: Colors.white),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -57,8 +70,11 @@ class ArtikelDetailPage extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported,
-                          size: 48, color: Colors.grey),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                   Container(
@@ -73,14 +89,15 @@ class ArtikelDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Featured badge
                   if (artikel.isFeatured)
                     Positioned(
                       top: MediaQuery.of(context).padding.top + 8,
                       right: 16,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 5),
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: _green,
                           borderRadius: BorderRadius.circular(12),
@@ -109,8 +126,10 @@ class ArtikelDetailPage extends StatelessWidget {
                 children: [
                   // Kategori badge
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: _green.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -135,6 +154,7 @@ class ArtikelDetailPage extends StatelessWidget {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
+                      color: _textDark,
                     ),
                   ),
 
@@ -150,7 +170,6 @@ class ArtikelDetailPage extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        // Author
                         Container(
                           width: 36,
                           height: 36,
@@ -181,6 +200,7 @@ class ArtikelDetailPage extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,
+                                  color: _textDark,
                                 ),
                               ),
                               Text(
@@ -195,7 +215,9 @@ class ArtikelDetailPage extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
@@ -203,8 +225,11 @@ class ArtikelDetailPage extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.visibility_outlined,
-                                  size: 14, color: Colors.grey[500]),
+                              Icon(
+                                Icons.visibility_outlined,
+                                size: 14,
+                                color: Colors.grey[500],
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '${artikel.dibaca}',
@@ -222,23 +247,62 @@ class ArtikelDetailPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 24),
-
-                  // Divider
-                  Container(
-                    height: 1,
-                    color: Colors.grey[200],
-                  ),
-
+                  Container(height: 1, color: Colors.grey[200]),
                   const SizedBox(height: 24),
 
-                  // Content
-                  Text(
-                    _stripHtml(artikel.isi),
-                    style: GoogleFonts.poppins(
+                  // ── ISI KONTEN HTML (Sudah disesuaikan dengan Web Admin) ──
+                  HtmlWidget(
+                    artikel.isi,
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 15,
                       color: Colors.black87,
-                      height: 1.8,
+                      height: 1.7,
                     ),
+                    customStylesBuilder: (element) {
+                      // Custom styling h1, h2, h3 mirip global.css web admin
+                      if (element.localName == 'h1') {
+                        return {
+                          'font-size': '22px',
+                          'font-weight': '800',
+                          'margin': '16px 0 8px 0',
+                          'color': '#111827',
+                        };
+                      }
+                      if (element.localName == 'h2') {
+                        return {
+                          'font-size': '18px',
+                          'font-weight': '700',
+                          'margin': '14px 0 8px 0',
+                          'color': '#1F2937',
+                        };
+                      }
+                      if (element.localName == 'h3') {
+                        return {
+                          'font-size': '16px',
+                          'font-weight': '700',
+                          'margin': '12px 0 6px 0',
+                          'color': '#374151',
+                        };
+                      }
+                      // Styling untuk blockquote kutipan teks
+                      if (element.localName == 'blockquote') {
+                        return {
+                          'border-left': '3px solid #1AB673',
+                          'padding-left': '12px',
+                          'color': '#6B7280',
+                          'font-style': 'italic',
+                          'margin': '12px 0',
+                        };
+                      }
+                      // Styling untuk link a href
+                      if (element.localName == 'a') {
+                        return {
+                          'color': '#1AB673',
+                          'text-decoration': 'underline',
+                        };
+                      }
+                      return null;
+                    },
                   ),
 
                   const SizedBox(height: 40),
