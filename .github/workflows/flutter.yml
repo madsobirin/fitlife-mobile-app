@@ -33,11 +33,15 @@ jobs:
         run: flutter test
         continue-on-error: true
 
-      # 4.1 Create local.properties
+      # 4.1 Create local.properties (baca versi dari pubspec.yaml otomatis)
       - name: Create local.properties
         run: |
-          echo "flutter.versionCode=1" > android/local.properties
-          echo "flutter.versionName=1.0.0" >> android/local.properties
+          VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //' | tr -d '\r')
+          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
+          echo "flutter.versionCode=$VERSION_CODE" > android/local.properties
+          echo "flutter.versionName=$VERSION_NAME" >> android/local.properties
+          echo "✅ Version: $VERSION_NAME ($VERSION_CODE)"
 
       # 4.2 Setup keystore for release signing (jika secret tersedia)
       - name: Setup Keystore
