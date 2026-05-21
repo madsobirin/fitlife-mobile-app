@@ -32,9 +32,15 @@ jobs:
       - name: Run Tests
         run: flutter test
 
+      # 4.1 Create local.properties
+      - name: Create local.properties
+        run: |
+          echo "flutter.versionCode=1" > android/local.properties
+          echo "flutter.versionName=1.0.0" >> android/local.properties
+
       # 5. Build APK
       - name: Build APK
-        run: flutter build apk --release --split-per-abi --build-name=1.0.0 --build-number=1
+        run: flutter build apk --release --split-per-abi
 
       # 6. Upload artifact
       - name: Upload APK Artifact
