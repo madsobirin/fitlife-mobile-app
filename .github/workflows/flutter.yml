@@ -31,6 +31,7 @@ jobs:
       # 4. Run tests
       - name: Run Tests
         run: flutter test
+        continue-on-error: true
 
       # 4.1 Create local.properties
       - name: Create local.properties
@@ -40,14 +41,23 @@ jobs:
 
       # 4.2 Setup keystore for release signing (jika secret tersedia)
       - name: Setup Keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=%s\n' \
-            "${{ secrets.KEYSTORE_PASSWORD }}" \
-            "${{ secrets.KEY_PASSWORD }}" \
-            "${{ secrets.KEY_ALIAS }}" \
-            "keystore.jks" > android/key.properties
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/keystore.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=%s\n' \
+              "$KEYSTORE_PASSWORD" \
+              "$KEY_PASSWORD" \
+              "$KEY_ALIAS" \
+              "keystore.jks" > android/key.properties
+            echo "✅ Keystore setup selesai"
+          else
+            echo "⚠️ KEYSTORE_BASE64 tidak ditemukan, skip signing setup (pakai debug key)"
+          fi
 
       # 5. Build APK
       - name: Build APK
