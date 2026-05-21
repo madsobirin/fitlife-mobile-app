@@ -2,9 +2,9 @@ name: Flutter CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -34,8 +34,7 @@ jobs:
 
       # 5. Build APK
       - name: Build APK
-        run: flutter build apk --release --split-per-abi
-
+        run: flutter build apk --release --split-per-abi --build-name=1.0.0 --build-number=1
 
       # 6. Upload artifact
       - name: Upload APK Artifact
@@ -67,7 +66,7 @@ jobs:
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
           -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
           -d text="❌ Build gagal di GitHub Actions"
-    
+
       - name: Send APK to Telegram
         if: success()
         run: |
