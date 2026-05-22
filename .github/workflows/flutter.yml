@@ -65,7 +65,7 @@ jobs:
 
       # 5. Build APK
       - name: Build APK
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
 
       # 6. Upload artifact
       - name: Upload APK Artifact
