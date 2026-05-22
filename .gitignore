@@ -47,6 +47,7 @@ app.*.map.json
 .code-review-graph/
 AGENTS.md
 CLAUDE.md
+GEMINI.md
 .claude
 PANDUAN*
 
