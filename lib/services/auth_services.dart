@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/config.dart';
 import '../models/user_model.dart';
@@ -81,7 +82,9 @@ class AuthServices {
 
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: Config.googleClientId,
+        // Web hanya support clientId, mobile hanya support serverClientId
+        clientId: kIsWeb ? Config.googleClientId : null,
+        serverClientId: kIsWeb ? null : Config.googleClientId,
       );
 
       print('2. Memulai googleSignIn.signIn()...');
